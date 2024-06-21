@@ -5,3 +5,7 @@
 **/obj/
 **/packages/
 **/.idea/
+
+src/shared/RTA.Core/obj/
+src/shared/RTA.Core/bin/
+
