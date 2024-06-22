@@ -1,0 +1,5 @@
+﻿test_case:
+  name: minimum valid test case
+  arrange:
+  act:
+  assert:
