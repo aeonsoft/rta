@@ -1,10 +1,6 @@
 ﻿namespace RTA.Core.Functions;
 
-public record Argument
+public class Argument : Dictionary<string, object>
 {
-    public required string Name { get; init; }
-
-    public DataType? DataType { get; init; }
     
-    public object? Value { get; init; }
 }

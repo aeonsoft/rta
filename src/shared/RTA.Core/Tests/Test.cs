@@ -1,7 +1,6 @@
 ﻿using RTA.Core.Functions;
-using YamlDotNet.Serialization;
 
-namespace RTA.Core.Test;
+namespace RTA.Core.Tests;
 
 public class Test
 {

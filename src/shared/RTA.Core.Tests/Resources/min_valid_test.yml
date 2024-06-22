@@ -1,5 +1,10 @@
-﻿test_case:
-  name: minimum valid test case
-  arrange:
-  act:
-  assert:
+﻿# Minimum valid test case.
+# It must contain a name property and the required 'act' and 'assert' sections.
+# A required section is valid if it contains 1 or more function calls.
+# The 'arrange' section is optional.
+name: minimum valid test case
+arrange:  
+act:   
+  some_function: # an argument less function 
+assert:  
+  some_function: { argument: value } 

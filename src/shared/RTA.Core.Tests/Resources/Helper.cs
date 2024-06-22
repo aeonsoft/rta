@@ -1,6 +1,19 @@
-﻿namespace RTA.Core.Tests.Resources;
+﻿using System.Reflection;
 
-public class Helper
+namespace RTA.Core.Tests.Resources;
+
+internal static class Helper
 {
-    
+    public static async Task<string> GetFileAsync(string resourceName)
+    {
+        var resourcePath = $"RTA.Core.Tests.Resources.{resourceName}";
+        var assembly = Assembly.GetExecutingAssembly();
+        using var stream = assembly.GetManifestResourceStream(resourcePath);
+
+        if (stream is null)
+            throw new ArgumentException($"{resourcePath} not found on {assembly.FullName}");
+
+        using StreamReader reader = new StreamReader(stream);
+        return await reader.ReadToEndAsync();
+    }
 }

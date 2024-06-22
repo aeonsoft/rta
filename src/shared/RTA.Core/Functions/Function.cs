@@ -4,5 +4,6 @@ public class Function
 {
     public required string Name { get; set; }
 
-    public IList<Argument> Arguments { get; } = new List<Argument>();
+    public Dictionary<string, Argument>? Arguments { get; } = new Dictionary<string, Argument>();
+       
 }
