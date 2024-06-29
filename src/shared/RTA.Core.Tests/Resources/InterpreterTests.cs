@@ -11,7 +11,7 @@ public class InterpreterTests(ITestOutputHelper output)
     private readonly XLogger<BasicInterpreter> _logger = new(output);
 
     [Fact]
-    public async Task TestCaseWithInvalidAssertMethod_ShouldFail() {
+    public async Task TestCaseWithInvalidMethods_ShouldFail() {
         //arrange
         var parser = new YamlParser();
         var yml = await Resources.Helper.GetFileAsync("min_valid_test.yml");        
@@ -20,14 +20,29 @@ public class InterpreterTests(ITestOutputHelper output)
 
         //act
         var test = parser.Parse(yml);
+        test.Arrange?.Add("some_method", new Argument(){});
+        var arrangeResult =  interpreter.IsValidSession(Test.Section.Arrange, test);
         var actResult =  interpreter.IsValidSession(Test.Section.Act, test);
+        var assertResult = interpreter.IsValidSession(Test.Section.Assert, test);
         
         //assert
         Assert.NotNull(test);
+        Assert.False(arrangeResult.result);
         Assert.False(actResult.result);
+        Assert.False(assertResult.result);
+                
+        Assert.NotNull(arrangeResult.errors);
+        Assert.Single(arrangeResult.errors);
+        Assert.Equal(expectedError, arrangeResult.errors[0]);
+
         Assert.NotNull(actResult.errors);
         Assert.Single(actResult.errors);
         Assert.Equal(expectedError, actResult.errors[0]);
+
+        Assert.NotNull(assertResult.errors);
+        Assert.Single(assertResult.errors);
+        Assert.Equal(expectedError, assertResult.errors[0]);
+        
         
     }
 

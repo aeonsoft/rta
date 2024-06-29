@@ -52,6 +52,12 @@ public class BasicInterpreter(ILogger<BasicInterpreter> logger) : IInterpreter
 
     private (bool, string[]?) IsArrangeSessionValid(Test test) {
         var errors = new List<string>();
+
+        foreach(var func in test.Assert.Keys) {
+            if (!_arrange.ContainsKey(func)) {
+                errors.Add($"Function {func} is unknown");
+            }
+        }    
         return (errors.Count == 0)
             ? (true, null)
             : (false, errors.ToArray());        
@@ -63,7 +69,7 @@ public class BasicInterpreter(ILogger<BasicInterpreter> logger) : IInterpreter
             errors.Add("Assert session is required and must contain at least one function");
 
         foreach(var func in test.Assert.Keys) {
-            if (!_act.ContainsKey(func)) {
+            if (!_assert.ContainsKey(func)) {
                 errors.Add($"Function {func} is unknown");
             }
         }            
