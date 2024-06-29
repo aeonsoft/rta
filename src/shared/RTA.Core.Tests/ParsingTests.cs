@@ -1,10 +1,14 @@
+using RTA.Core.Interpreters;
 using RTA.Core.Parser;
+using Xunit.Abstractions;
+
 namespace RTA.Core.Tests;
 
-public class ParsingTests
+public class ParsingTests(ITestOutputHelper output)
 {
     private const string ResourcesPath = "RTA.Core.Tests.res";
-    
+    private readonly XLogger<BasicInterpreter> _logger = new(output);
+
     [Fact]
     public async Task MinimumValidYaml_ShouldBeParsed()
     {
@@ -23,4 +27,6 @@ public class ParsingTests
         Assert.NotNull(test.Act);
         Assert.NotNull(test.Assert);
     }
+
+    
 }
