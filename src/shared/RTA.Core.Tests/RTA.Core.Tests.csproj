@@ -30,4 +30,11 @@
       <EmbeddedResource Include="Resources\min_valid_test.yml" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Remove="Resources\chromedriver.exe" />
+      <AdditionalFiles Include="Resources\chromedriver.exe">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </AdditionalFiles>
+    </ItemGroup>
+
 </Project>

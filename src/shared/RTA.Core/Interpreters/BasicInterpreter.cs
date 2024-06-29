@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using RTA.Core.Functions;
 using RTA.Core.Tests;
@@ -15,29 +16,35 @@ public class BasicInterpreter(ILogger<BasicInterpreter> logger) : IInterpreter
     public void Run(Test test)
     {
         logger.LogInformation($"Running test '{test.Name}'...");
+        
         RunArrangeSection(test);
         RunActSection(test);
         RunAssertSection(test);
     }
 
+    public virtual void OnBeforeRun()
+    {
+        
+    }
 
 
-    public void Register(Test.Section section, Function function) {
-        switch (section){
-            case Test.Section.Act: 
+    public void Register(Test.Section section, Function function)
+    {
+        switch (section)
+        {
+            case Test.Section.Act:
                 if (!_act.TryAdd(function.Name, function))
                     _act[function.Name] = function;
-            break;
-            case Test.Section.Arrange: 
+                break;
+            case Test.Section.Arrange:
                 if (!_arrange.TryAdd(function.Name, function))
                     _arrange[function.Name] = function;
-            break;
-            case Test.Section.Assert:     
+                break;
+            case Test.Section.Assert:
                 if (!_assert.TryAdd(function.Name, function))
                     _assert[function.Name] = function;
-            break;
+                break;
         }
-
     }
 
     public (bool result, string[]? errors) IsValidSession(Test.Section section, Test test) {
