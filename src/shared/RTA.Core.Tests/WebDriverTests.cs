@@ -1,12 +1,18 @@
 ﻿using System.Net;
 using System.Runtime.InteropServices;
 using RTA.Core.Interpreters;
+using RTA.Core.WebDriver;
 using RTA.Core.WebDriver.Commands;
 
 namespace RTA.Core.Tests;
 
 public class WebDriverTests
 {
+    private readonly Settings _webDriverSettings = new Settings
+    {
+        Port = 9515
+    };
+    
     [Fact]
     public async Task WebDriverShouldBeRunningOnDefaultPort()
     {
@@ -17,35 +23,15 @@ public class WebDriverTests
     }
 
     [Fact]
-    public async Task GetStatus_ShouldReturnOk()
+    public async Task GetStatus_ShouldReturnServerIsReady()
     {
         var client = new HttpClient();
-        var command = new GetStatusCommand(client);
+        var command = new GetStatusCommand(_webDriverSettings, client);
 
         var result = await command.RunAsync();
-        
+
+        Assert.NotNull(result);
         Assert.True(result.Ready);
     }
     
-    /*
-    [Fact]
-    public void StartWebDriverServer_ShouldSpawnNewProcess()
-    {
-        //arrange
-        bool isLinux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
-        var config = new Config()
-        {
-            WebDriverPath = isLinux? "resources/chromedriver" : "resources/chromedriver.exe",
-            WebDriverPort = 9915
-        };
-        var webDriver = new ChromeWebDriver(config);
-        
-        //act and assert
-        webDriver.StartServer();
-        Assert.True(webDriver.ServerRunning());
-        
-        webDriver.CloseServer();
-        Assert.False(webDriver.ServerRunning());
-    }
-    */
 }
