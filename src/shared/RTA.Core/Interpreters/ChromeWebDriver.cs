@@ -13,7 +13,10 @@ public class ChromeWebDriver(Interpreters.Config config)
             FileName = config.WebDriverPath,
             UseShellExecute = false,
             Arguments = $"--port={config.WebDriverPort}",
-            WindowStyle = ProcessWindowStyle.Normal,
+            WindowStyle = ProcessWindowStyle.Hidden,
+            RedirectStandardError = true,
+            RedirectStandardInput = true,
+            RedirectStandardOutput = true
         };
         try {
             _process = Process.Start(psi);
