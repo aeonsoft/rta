@@ -10,9 +10,9 @@ public class Test
     public string? Version { get; set; }
     public string? Description { get; set; }
 
-    public Dictionary<string, Argument>? Arrange { get; set; }
-    public Dictionary<string, Argument> Act { get; set; } = new Dictionary<string, Argument>();
-    public Dictionary<string, Argument> Assert { get; set; } = new Dictionary<string, Argument>();
+    public Dictionary<string, Arguments>? Arrange { get; set; }
+    public Dictionary<string, Arguments> Act { get; set; } = new Dictionary<string, Arguments>();
+    public Dictionary<string, Arguments> Assert { get; set; } = new Dictionary<string, Arguments>();
 
 }
 

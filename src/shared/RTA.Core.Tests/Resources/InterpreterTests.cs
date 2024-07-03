@@ -20,7 +20,7 @@ public class InterpreterTests(ITestOutputHelper output)
 
         //act
         var test = parser.Parse(yml);
-        test.Arrange?.Add("some_method", new Argument(){});
+        test.Arrange?.Add("some_method", new Arguments(){});
         var arrangeResult =  interpreter.IsValidSession(Test.Section.Arrange, test);
         var actResult =  interpreter.IsValidSession(Test.Section.Act, test);
         var assertResult = interpreter.IsValidSession(Test.Section.Assert, test);

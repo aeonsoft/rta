@@ -8,7 +8,7 @@ internal static class Helper
     {
         var resourcePath = $"RTA.Core.Tests.Resources.{resourceName}";
         var assembly = Assembly.GetExecutingAssembly();
-        using var stream = assembly.GetManifestResourceStream(resourcePath);
+        await using var stream = assembly.GetManifestResourceStream(resourcePath);
 
         if (stream is null)
             throw new ArgumentException($"{resourcePath} not found on {assembly.FullName}");
