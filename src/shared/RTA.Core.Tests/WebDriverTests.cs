@@ -40,11 +40,23 @@ public class WebDriverTests
     [Fact]
     public async Task NewSessionCommand_ShouldRetrieveASessionId()
     {
+        //arrange
         var command = new NewSessionCommand(_webDriverSettings, _httpClient);
-
+        
+        //act
         var result = await command.RunAsync();
 
+        //assert
         Assert.NotNull(result);
         Assert.NotNull(result.SessionId);
+        Assert.Equal("chrome", result.Capabilities.BrowserName);
+
+        //cleanup
+        if (!string.IsNullOrWhiteSpace(result.SessionId))
+        {
+            // close the opened session       
+            var url = $"http://localhost:9515/session/{result.SessionId}";
+            await _httpClient.DeleteAsync(url);
+        }
     }
 }
