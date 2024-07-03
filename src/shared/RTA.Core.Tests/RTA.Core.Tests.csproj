@@ -35,6 +35,10 @@
       <AdditionalFiles Include="Resources\chromedriver.exe">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </AdditionalFiles>
+      <None Remove="Resources\chromedriver" />
+      <AdditionalFiles Include="Resources\chromedriver">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </AdditionalFiles>
     </ItemGroup>
 
 </Project>

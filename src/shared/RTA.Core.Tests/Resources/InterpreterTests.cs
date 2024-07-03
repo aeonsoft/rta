@@ -52,7 +52,8 @@ public class InterpreterTests(ITestOutputHelper output)
         var parser = new YamlParser();
         var yml = await Resources.Helper.GetFileAsync("min_valid_test.yml");        
         var interpreter = new BasicInterpreter(_logger);
-        var function = new Function() { Name = "some_function" };
+        var fooLogger = new XLogger<Foo>(output);
+        var function = new Foo(fooLogger) { Name = "some_function" };
         
         interpreter.Register(Test.Section.Act, function);
 
