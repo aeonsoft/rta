@@ -2,6 +2,11 @@ using System.Net.Http.Json;
 
 namespace RTA.Core.WebDriver.Commands;
 
+/// <summary>
+/// https://www.w3.org/TR/webdriver2/#dfn-status
+/// </summary>
+/// <param name="settings"></param>
+/// <param name="client"></param>
 public class GetStatusCommand(Settings settings, HttpClient client) : ICommand<GetStatusResponse>
 {
     public async Task<GetStatusResponse?> RunAsync()
