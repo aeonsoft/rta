@@ -50,10 +50,10 @@ public class WebDriverTests
         //assert
         Assert.NotNull(result);
         Assert.NotNull(result.SessionId);
-        Assert.Equal("chrome", result.Capabilities.BrowserName);
+        Assert.Equal("chrome", result?.Capabilities?.BrowserName);
 
         //cleanup
-        if (!string.IsNullOrWhiteSpace(result.SessionId))
+        if (!string.IsNullOrWhiteSpace(result?.SessionId))
         {
             // close the opened session       
             var url = $"http://localhost:9515/session/{result.SessionId}";
