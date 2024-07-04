@@ -3,13 +3,14 @@ using System.Runtime.InteropServices;
 using RTA.Core.Interpreters;
 using RTA.Core.WebDriver;
 using RTA.Core.WebDriver.Commands;
+using RTA.Core.WebDriver.Commands.CloseSession;
 using RTA.Core.WebDriver.Commands.NewSession;
 
 namespace RTA.Core.Tests;
 
 public class WebDriverTests
 {
-    private readonly Settings _webDriverSettings = new Settings
+    private readonly Settings _settings = new Settings
     {
         Port = 9515
     };
@@ -28,7 +29,7 @@ public class WebDriverTests
     [Fact]
     public async Task GetStatus_ShouldReturnServerIsReady()
     {
-        var command = new GetStatusCommand(_webDriverSettings, _httpClient);
+        var command = new GetStatusCommand(_settings, _httpClient);
 
         var result = await command.RunAsync();
 
@@ -41,7 +42,7 @@ public class WebDriverTests
     public async Task NewSessionCommand_ShouldRetrieveASessionId()
     {
         //arrange
-        var command = new NewSessionCommand(_webDriverSettings, _httpClient);
+        var command = new NewSessionCommand(_settings, _httpClient);
         
         //act
         var result = await command.RunAsync();
@@ -58,5 +59,23 @@ public class WebDriverTests
             var url = $"http://localhost:9515/session/{result.SessionId}";
             await _httpClient.DeleteAsync(url);
         }
+    }
+
+    [Fact]
+    public async Task CloseSession_ReturnsOk()
+    {
+        //arrange
+        var newSession = new NewSessionCommand(_settings, _httpClient);
+        
+        //act
+        var session = await newSession.RunAsync();
+        Assert.NotNull(session);
+        Assert.NotNull(session.SessionId);
+
+        var closeSession = new DeleteSessionCommand(_settings, _httpClient, session.SessionId);
+        var result = await closeSession.RunAsync();
+        
+        //assert
+        Assert.True(result);
     }
 }
