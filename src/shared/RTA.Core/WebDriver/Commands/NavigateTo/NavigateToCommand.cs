@@ -3,6 +3,13 @@ using System.Text.Json;
 
 namespace RTA.Core.WebDriver.Commands.NavigateTo;
 
+/// <summary>
+/// https://www.w3.org/TR/webdriver2/#navigate-to
+/// </summary>
+/// <param name="settings"></param>
+/// <param name="client"></param>
+/// <param name="sessionId"></param>
+/// <param name="where"></param>
 public class NavigateToCommand(
     Settings settings, HttpClient client, string sessionId, string where): ICommand<bool>
 {
