@@ -1,9 +1,11 @@
 ﻿using System.Net;
-using System.Runtime.InteropServices;
-using RTA.Core.Interpreters;
+using System.Net.Http.Json;
+using System.Text.Json;
 using RTA.Core.WebDriver;
 using RTA.Core.WebDriver.Commands;
-using RTA.Core.WebDriver.Commands.CloseSession;
+using RTA.Core.WebDriver.Commands.DeleteSession;
+using RTA.Core.WebDriver.Commands.GetCurrentUrl;
+using RTA.Core.WebDriver.Commands.NavigateTo;
 using RTA.Core.WebDriver.Commands.NewSession;
 
 namespace RTA.Core.Tests;
@@ -16,6 +18,16 @@ public class WebDriverTests
     };
     
     private readonly HttpClient _httpClient = new HttpClient();
+
+
+    /// <summary>
+    /// Closes a WebDriver Session
+    /// </summary>
+    /// <param name="sessionId"></param>
+    private async Task CloseSession(string sessionId)
+    {
+        var url = $"http://localhost:{_settings.Port}/session/{sessionId}";
+        await _httpClient.DeleteAsync(url); }
     
      
     [Fact]
@@ -55,9 +67,7 @@ public class WebDriverTests
         //cleanup
         if (!string.IsNullOrWhiteSpace(result?.SessionId))
         {
-            // close the opened session       
-            var url = $"http://localhost:9515/session/{result.SessionId}";
-            await _httpClient.DeleteAsync(url);
+            await CloseSession(result.SessionId);
         }
     }
 
@@ -77,5 +87,27 @@ public class WebDriverTests
         
         //assert
         Assert.True(result);
+    }
+
+    [Fact]
+    public async Task NavigateToCommand_OpenRequestedPage()
+    {
+        //arrange
+        var expectedUrl = "https://www.google.com/";
+        var session = await new NewSessionCommand(_settings, _httpClient).RunAsync();
+        Assert.NotNull(session);
+        Assert.NotNull(session.SessionId);
+        
+        //act
+        var navigate = await new NavigateToCommand(_settings, _httpClient, session.SessionId, expectedUrl).RunAsync();
+        var getUrlUrl = $"http://localhost:{_settings.Port}/session/{session.SessionId}/url";  
+        var response = await _httpClient.GetAsync(getUrlUrl);
+        var content = await response.Content.ReadAsStringAsync();
+        await CloseSession(session.SessionId);
+        
+        
+        //assert
+        Assert.True(navigate);
+        Assert.Contains(expectedUrl, content);
     }
 }

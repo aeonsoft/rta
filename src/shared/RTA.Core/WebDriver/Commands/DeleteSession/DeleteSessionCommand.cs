@@ -1,4 +1,4 @@
-namespace RTA.Core.WebDriver.Commands.CloseSession;
+namespace RTA.Core.WebDriver.Commands.DeleteSession;
 
 /// <summary>
 /// https://www.w3.org/TR/webdriver2/#delete-session
