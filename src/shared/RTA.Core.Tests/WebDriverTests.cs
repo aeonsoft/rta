@@ -110,4 +110,23 @@ public class WebDriverTests
         Assert.True(navigate);
         Assert.Contains(expectedUrl, content);
     }
+
+    [Fact]
+    public async Task GetCurrentUrl_ReturnsCurrentUrl()
+    {
+        var expectedUrl = "https://www.google.com/";
+        var session = await new NewSessionCommand(_settings, _httpClient).RunAsync();
+        Assert.NotNull(session);
+        Assert.NotNull(session.SessionId);
+        
+        //act
+        await new NavigateToCommand(_settings, _httpClient, session.SessionId, expectedUrl).RunAsync();
+        var response = await new GetCurrentUrlCommand(_settings, _httpClient, session.SessionId).RunAsync();
+        await CloseSession(session.SessionId);
+        
+        
+        //assert
+        Assert.NotNull(response);
+        Assert.Contains(expectedUrl, response.Value);
+    }
 }
