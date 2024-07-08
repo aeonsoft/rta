@@ -9,13 +9,13 @@ namespace RTA.Core.WebDriver.Commands.GetCurrentUrl;
 /// <param name="client"></param>
 /// <param name="sessionId"></param>
 public class GetCurrentUrlCommand(Settings settings, HttpClient client, string sessionId) 
-    : ICommand<GetCurrentUrlResponse>
+    : ICommand<string>
 {
-    public async Task<GetCurrentUrlResponse?> RunAsync()
+    public async Task<string?> RunAsync()
     {
         var url = $"http://localhost:{settings.Port}/session/{sessionId}/url";
         var response = await client.GetAsync(url);
         var result = JsonSerializer.Deserialize<GetCurrentUrlResponse>(await response.Content.ReadAsStringAsync());
-        return result;
+        return result?.Value;
     }
 }

@@ -4,6 +4,7 @@ using System.Text.Json;
 using RTA.Core.WebDriver;
 using RTA.Core.WebDriver.Commands;
 using RTA.Core.WebDriver.Commands.DeleteSession;
+using RTA.Core.WebDriver.Commands.ElementClick;
 using RTA.Core.WebDriver.Commands.ElementSendKeys;
 using RTA.Core.WebDriver.Commands.FindElement;
 using RTA.Core.WebDriver.Commands.GetCurrentUrl;
@@ -131,7 +132,7 @@ public class WebDriverTests
         
         //assert
         Assert.NotNull(response);
-        Assert.Contains(expectedUrl, response.Value);
+        Assert.Contains(expectedUrl, response);
     }
 
     [Fact]
@@ -201,7 +202,47 @@ public class WebDriverTests
         // assert
         Assert.NotNull(foundText);
         Assert.Equal(expectedText, foundText);
-    } 
+    }
+
+
+    [Fact]
+    public async Task ClickOnLogin_WithValidCredentials_ShouldLogAndRedirect()
+    {
+        //arrange
+        const string url = "https://www.saucedemo.com/";
+        const string userName = "standard_user";
+        const string password = "secret_sauce";
+        const string exceptedUrl = "https://www.saucedemo.com/inventory.html";
+        
+        var session = await new NewSessionCommand(_settings, _httpClient).RunAsync();
+        Assert.NotNull(session);
+        Assert.NotNull(session.SessionId);
+
+        var sessionId = session.SessionId;
+        var elements = new Dictionary<string, string>();
+        
+        //act
+        await new NavigateToCommand(_settings, _httpClient, sessionId, url).RunAsync();
+        elements["#user-name"] = await new FindElementCommand(_settings, _httpClient, sessionId, "#user-name").RunAsync();
+        elements["#password"] = await new FindElementCommand(_settings, _httpClient, sessionId, "#password").RunAsync();
+        elements["#login-button"] = await new FindElementCommand(_settings, _httpClient, sessionId, "#login-button").RunAsync();
+
+        Assert.NotNull(elements["#user-name"]);
+        Assert.NotNull(elements["#password"]);
+        Assert.NotNull(elements["#login-button"]);
+
+        await new ElementSendKeysCommand(_settings, _httpClient, sessionId, elements["#user-name"], userName).RunAsync();
+        await new ElementSendKeysCommand(_settings, _httpClient, sessionId, elements["#password"], password).RunAsync();
+        await new ElementClickCommand(_settings, _httpClient, sessionId, elements["#login-button"]).RunAsync();
+
+        var currentUtl = await new GetCurrentUrlCommand(_settings, _httpClient, sessionId).RunAsync();
+        await CloseSession(session.SessionId);
+        
+        // assert
+        Assert.NotNull(currentUtl);
+        Assert.Equal(exceptedUrl, currentUtl);
+       
+    }
     
     
 }
