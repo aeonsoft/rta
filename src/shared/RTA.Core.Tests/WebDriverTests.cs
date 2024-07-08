@@ -4,8 +4,11 @@ using System.Text.Json;
 using RTA.Core.WebDriver;
 using RTA.Core.WebDriver.Commands;
 using RTA.Core.WebDriver.Commands.DeleteSession;
+using RTA.Core.WebDriver.Commands.ElementSendKeys;
 using RTA.Core.WebDriver.Commands.FindElement;
 using RTA.Core.WebDriver.Commands.GetCurrentUrl;
+using RTA.Core.WebDriver.Commands.GetElementAttribute;
+using RTA.Core.WebDriver.Commands.GetElementText;
 using RTA.Core.WebDriver.Commands.NavigateTo;
 using RTA.Core.WebDriver.Commands.NewSession;
 
@@ -149,4 +152,56 @@ public class WebDriverTests
         //assert
         Assert.NotNull(internalId);
     }
+    
+    [Fact]
+    public async Task FindElement_OnInvalidElement_ShouldReturnNull()
+    {
+        var expectedUrl = "https://www.saucedemo.com/";
+        var session = await new NewSessionCommand(_settings, _httpClient).RunAsync();
+        Assert.NotNull(session);
+        Assert.NotNull(session.SessionId);
+        
+        //act
+        await new NavigateToCommand(_settings, _httpClient, session.SessionId, expectedUrl).RunAsync();
+        var internalId =
+            await new FindElementCommand(_settings, _httpClient, session.SessionId, "#non-existing-id").RunAsync();
+        await CloseSession(session.SessionId);
+        
+        
+        //assert
+        Assert.Null(internalId);
+    }
+
+
+    [Fact]
+    public async Task SendKeys_OnValidElement_ShouldFillElement()
+    {
+        //arrange
+        const string expectedUrl = "https://www.saucedemo.com/";
+        const string expectedText = "some random text";
+        const string targetElement = "#user-name";
+        
+        var session = await new NewSessionCommand(_settings, _httpClient).RunAsync();
+        Assert.NotNull(session);
+        Assert.NotNull(session.SessionId);
+        
+        //act
+        await new NavigateToCommand(_settings, _httpClient, session.SessionId, expectedUrl).RunAsync();
+        var elementId =
+            await new FindElementCommand(_settings, _httpClient, session.SessionId, targetElement).RunAsync();
+
+        Assert.NotNull(elementId);
+
+        await new ElementSendKeysCommand(_settings, _httpClient, session.SessionId, elementId, expectedText).RunAsync();
+        var foundText = await new GetElementAttributeCommand(_settings, _httpClient, session.SessionId, elementId, "value")
+            .RunAsync();
+        
+        await CloseSession(session.SessionId);
+        
+        // assert
+        Assert.NotNull(foundText);
+        Assert.Equal(expectedText, foundText);
+    } 
+    
+    
 }
