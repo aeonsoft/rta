@@ -4,6 +4,7 @@ using System.Text.Json;
 using RTA.Core.WebDriver;
 using RTA.Core.WebDriver.Commands;
 using RTA.Core.WebDriver.Commands.DeleteSession;
+using RTA.Core.WebDriver.Commands.FindElement;
 using RTA.Core.WebDriver.Commands.GetCurrentUrl;
 using RTA.Core.WebDriver.Commands.NavigateTo;
 using RTA.Core.WebDriver.Commands.NewSession;
@@ -128,5 +129,24 @@ public class WebDriverTests
         //assert
         Assert.NotNull(response);
         Assert.Contains(expectedUrl, response.Value);
+    }
+
+    [Fact]
+    public async Task FindElement_OnValidElement_ShouldReturnInternalElementId()
+    {
+        var expectedUrl = "https://www.saucedemo.com/";
+        var session = await new NewSessionCommand(_settings, _httpClient).RunAsync();
+        Assert.NotNull(session);
+        Assert.NotNull(session.SessionId);
+        
+        //act
+        await new NavigateToCommand(_settings, _httpClient, session.SessionId, expectedUrl).RunAsync();
+        var internalId =
+            await new FindElementCommand(_settings, _httpClient, session.SessionId, "#user-name").RunAsync();
+        await CloseSession(session.SessionId);
+        
+        
+        //assert
+        Assert.NotNull(internalId);
     }
 }
