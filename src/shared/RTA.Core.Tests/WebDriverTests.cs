@@ -219,7 +219,7 @@ public class WebDriverTests
         Assert.NotNull(session.SessionId);
 
         var sessionId = session.SessionId;
-        var elements = new Dictionary<string, string>();
+        var elements = new Dictionary<string, string?>();
         
         //act
         await new NavigateToCommand(_settings, _httpClient, sessionId, url).RunAsync();

@@ -1,6 +1,6 @@
 ﻿namespace RTA.Core.WebDriver.Commands.ElementClick;
 
-public class ElementClickCommand(Settings settings, HttpClient client, string sessionId, string elementId)
+public class ElementClickCommand(Settings settings, HttpClient client, string sessionId, string? elementId)
     :ICommand<bool>
 {
     public async Task<bool> RunAsync()

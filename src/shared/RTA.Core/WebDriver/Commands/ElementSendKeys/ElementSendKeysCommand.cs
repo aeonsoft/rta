@@ -2,7 +2,7 @@
 
 namespace RTA.Core.WebDriver.Commands.ElementSendKeys;
 
-public class ElementSendKeysCommand(Settings settings, HttpClient client, string sessionId, string elementId, string text)
+public class ElementSendKeysCommand(Settings settings, HttpClient client, string sessionId, string? elementId, string text)
     :ICommand<bool>
 {
     public async Task<bool> RunAsync()
