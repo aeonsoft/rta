@@ -17,6 +17,8 @@ namespace RTA.Core.Tests;
 
 public class WebDriverTests
 {
+    const string SauceDemoUrl = "https://www.saucedemo.com/";
+    
     private readonly Settings _settings = new Settings
     {
         Port = 9515
@@ -95,10 +97,10 @@ public class WebDriverTests
     }
 
     [Fact]
-    public async Task NavigateToCommand_OpenRequestedPage()
+    public async Task NavigateTo_ValidUrl_OpenRequestedPage()
     {
         //arrange
-        var expectedUrl = "https://www.google.com/";
+        var expectedUrl = SauceDemoUrl;
         var session = await new NewSessionCommand(_settings, _httpClient).RunAsync();
         Assert.NotNull(session);
         Assert.NotNull(session.SessionId);
@@ -119,7 +121,7 @@ public class WebDriverTests
     [Fact]
     public async Task GetCurrentUrl_ReturnsCurrentUrl()
     {
-        var expectedUrl = "https://www.google.com/";
+        var expectedUrl = SauceDemoUrl;
         var session = await new NewSessionCommand(_settings, _httpClient).RunAsync();
         Assert.NotNull(session);
         Assert.NotNull(session.SessionId);
@@ -138,13 +140,12 @@ public class WebDriverTests
     [Fact]
     public async Task FindElement_OnValidElement_ShouldReturnInternalElementId()
     {
-        var expectedUrl = "https://www.saucedemo.com/";
         var session = await new NewSessionCommand(_settings, _httpClient).RunAsync();
         Assert.NotNull(session);
         Assert.NotNull(session.SessionId);
         
         //act
-        await new NavigateToCommand(_settings, _httpClient, session.SessionId, expectedUrl).RunAsync();
+        await new NavigateToCommand(_settings, _httpClient, session.SessionId, SauceDemoUrl).RunAsync();
         var internalId =
             await new FindElementCommand(_settings, _httpClient, session.SessionId, "#user-name").RunAsync();
         await CloseSession(session.SessionId);
@@ -157,13 +158,12 @@ public class WebDriverTests
     [Fact]
     public async Task FindElement_OnInvalidElement_ShouldReturnNull()
     {
-        var expectedUrl = "https://www.saucedemo.com/";
-        var session = await new NewSessionCommand(_settings, _httpClient).RunAsync();
+                var session = await new NewSessionCommand(_settings, _httpClient).RunAsync();
         Assert.NotNull(session);
         Assert.NotNull(session.SessionId);
         
         //act
-        await new NavigateToCommand(_settings, _httpClient, session.SessionId, expectedUrl).RunAsync();
+        await new NavigateToCommand(_settings, _httpClient, session.SessionId, SauceDemoUrl).RunAsync();
         var internalId =
             await new FindElementCommand(_settings, _httpClient, session.SessionId, "#non-existing-id").RunAsync();
         await CloseSession(session.SessionId);
@@ -178,7 +178,6 @@ public class WebDriverTests
     public async Task SendKeys_OnValidElement_ShouldFillElement()
     {
         //arrange
-        const string expectedUrl = "https://www.saucedemo.com/";
         const string expectedText = "some random text";
         const string targetElement = "#user-name";
         
@@ -187,7 +186,7 @@ public class WebDriverTests
         Assert.NotNull(session.SessionId);
         
         //act
-        await new NavigateToCommand(_settings, _httpClient, session.SessionId, expectedUrl).RunAsync();
+        await new NavigateToCommand(_settings, _httpClient, session.SessionId, SauceDemoUrl).RunAsync();
         var elementId =
             await new FindElementCommand(_settings, _httpClient, session.SessionId, targetElement).RunAsync();
 
@@ -206,10 +205,55 @@ public class WebDriverTests
 
 
     [Fact]
+    public async Task ClickOnLogin_WithInvalidUserName_ShouldDisplayError()
+    {
+        //arrange
+        const string userName = "non_existing_user_name";
+        const string password = "secret_sauce";
+        const string exceptedMessage = "Epic sadface: Username and password do not match any user in this service";
+        const string errorMessageSelector = "h3[data-test='error']";
+        const string userNameSelector = "#user-name";
+        const string pwdSelector = "#password";
+        const string loginButtonSelector = "#login-button";
+        
+        var session = await new NewSessionCommand(_settings, _httpClient).RunAsync();
+        Assert.NotNull(session);
+        Assert.NotNull(session.SessionId);
+
+        var sessionId = session.SessionId;
+        var element = new Dictionary<string, string?>();
+        
+        //act
+        await new NavigateToCommand(_settings, _httpClient, sessionId, SauceDemoUrl).RunAsync();
+        element[userNameSelector] = await new FindElementCommand(_settings, _httpClient, sessionId, userNameSelector).RunAsync();
+        element[pwdSelector] = await new FindElementCommand(_settings, _httpClient, sessionId, pwdSelector).RunAsync();
+        element[loginButtonSelector] = await new FindElementCommand(_settings, _httpClient, sessionId, loginButtonSelector).RunAsync();
+        var errorElement = await new FindElementCommand(_settings, _httpClient, sessionId, errorMessageSelector).RunAsync();
+
+        Assert.NotNull(element[userNameSelector]);
+        Assert.NotNull(element[pwdSelector]);
+        Assert.NotNull(element[loginButtonSelector]);
+        Assert.Null(errorElement); // the element must not be present in the page at this moment
+
+        await new ElementSendKeysCommand(_settings, _httpClient, sessionId, element[userNameSelector], userName).RunAsync();
+        await new ElementSendKeysCommand(_settings, _httpClient, sessionId, element[pwdSelector], password).RunAsync();
+        await new ElementClickCommand(_settings, _httpClient, sessionId, element[loginButtonSelector]).RunAsync();
+        
+        // the error message should be visible on screen
+        errorElement = element[errorMessageSelector] = await new FindElementCommand(_settings, _httpClient, sessionId, errorMessageSelector).RunAsync();
+        Assert.NotNull(errorElement);
+
+        var foundMessage = await new GetElementTextCommand(_settings, _httpClient, sessionId, errorElement).RunAsync();
+        await CloseSession(session.SessionId);
+        
+        // assert
+        Assert.Equal(exceptedMessage, foundMessage);
+    }    
+
+    [Fact]
     public async Task ClickOnLogin_WithValidCredentials_ShouldLogAndRedirect()
     {
         //arrange
-        const string url = "https://www.saucedemo.com/";
         const string userName = "standard_user";
         const string password = "secret_sauce";
         const string exceptedUrl = "https://www.saucedemo.com/inventory.html";
@@ -222,7 +266,7 @@ public class WebDriverTests
         var elements = new Dictionary<string, string?>();
         
         //act
-        await new NavigateToCommand(_settings, _httpClient, sessionId, url).RunAsync();
+        await new NavigateToCommand(_settings, _httpClient, sessionId, SauceDemoUrl).RunAsync();
         elements["#user-name"] = await new FindElementCommand(_settings, _httpClient, sessionId, "#user-name").RunAsync();
         elements["#password"] = await new FindElementCommand(_settings, _httpClient, sessionId, "#password").RunAsync();
         elements["#login-button"] = await new FindElementCommand(_settings, _httpClient, sessionId, "#login-button").RunAsync();
@@ -235,12 +279,12 @@ public class WebDriverTests
         await new ElementSendKeysCommand(_settings, _httpClient, sessionId, elements["#password"], password).RunAsync();
         await new ElementClickCommand(_settings, _httpClient, sessionId, elements["#login-button"]).RunAsync();
 
-        var currentUtl = await new GetCurrentUrlCommand(_settings, _httpClient, sessionId).RunAsync();
+        var currentUl = await new GetCurrentUrlCommand(_settings, _httpClient, sessionId).RunAsync();
         await CloseSession(session.SessionId);
         
         // assert
-        Assert.NotNull(currentUtl);
-        Assert.Equal(exceptedUrl, currentUtl);
+        Assert.NotNull(currentUl);
+        Assert.Equal(exceptedUrl, currentUl);
        
     }
     
