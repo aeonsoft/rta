@@ -12,20 +12,22 @@ using RTA.Core.WebDriver.Commands.NewSession;
 namespace RTA.Core.WebDriver.Commands;
 
 
-public class CommandRunnerException(string? message) : Exception(message);
+public class RunnerException(string? message) : Exception(message);
 
 /// <summary>
 /// Runs commands against a web driver in its own session.
 /// Use one instance per thread if you want multiple sessions in parallel
 /// </summary>
-public class CommandRunner(Settings settings, HttpClient httpClient)
+public class Runner(Settings settings) : IDisposable
 {
     private readonly Settings _settings = settings;
-    private readonly HttpClient _httpClient = httpClient;
+    private readonly HttpClient _httpClient = new HttpClient();
     private string? _sessionId = null;
+    private readonly Dictionary<string, string?> _elements = new Dictionary<string, string?>();
 
-    private bool InSession => _sessionId is not null;
-    private string SessionId => _sessionId ?? string.Empty;
+    public bool InSession => _sessionId is not null;
+    public string SessionId => _sessionId ?? string.Empty;
+    
 
     public async Task<string?> StartSession()
     {
@@ -41,11 +43,11 @@ public class CommandRunner(Settings settings, HttpClient httpClient)
     /// Check if we have a session.
     /// If not, throws an exception.
     /// </summary>
-    /// <exception cref="CommandRunnerException"></exception>
+    /// <exception cref="RunnerException"></exception>
     private void EnsureSession()
     {
         if (!InSession)
-            throw new CommandRunnerException($"No active session detected");
+            throw new RunnerException($"No active session detected");
     }
 
     public async Task<bool> CloseSession()
@@ -70,36 +72,67 @@ public class CommandRunner(Settings settings, HttpClient httpClient)
 
     /// <summary>
     /// Finds one element using a css selector.
+    /// This method uses no caching strategy.
     /// </summary>
     /// <param name="selector"></param>
     /// <returns>Internal element's Id</returns>
     public async Task<string?> FindElement(string selector)
     {
         EnsureSession();
-        return await new FindElementCommand(_settings, _httpClient, SessionId, selector)
+        if (_elements.TryGetValue(selector, out var element))
+            return element;
+                
+        element =  await new FindElementCommand(_settings, _httpClient, SessionId, selector)
             .RunAsync();
+        if (element is not null)
+            _elements[selector] = element;
+        
+        return element;
     }
 
     /// <summary>
     /// Send string as keystrokes to a html element
     /// </summary>
-    /// <param name="element">element reference returned by FindElement</param>
+    /// <param name="selector">css selector for element</param>
     /// <param name="keys">value to send as keystrokes</param>
-    public async Task<bool> SendKeys(string element, string keys)
+    public async Task<bool> SendKeys(string selector, string keys)
     {
-        EnsureSession();
-        return await new ElementSendKeysCommand(_settings, _httpClient, SessionId, element, keys)
+        EnsureSession();        
+        var elementRef = await GetElementReference(selector) ?? string.Empty;
+        return await new ElementSendKeysCommand(_settings, _httpClient, SessionId, elementRef, keys)
             .RunAsync();
+
+    }
+
+    /// <summary>
+    /// Finds one element using a css selector.
+    /// This method uses the runner's internal cache for performance
+    /// </summary>
+    /// <param name="selector">css selector for element</param>
+    /// <returns></returns>
+    private async Task<string?> GetElementReference(string selector)
+    {
+        string? elementRef = null;
+        if (!_elements.TryGetValue(selector, out var element))
+        {
+            elementRef = await FindElement(selector);
+            if (elementRef is null)
+                return null;
+        }
+
+        _elements[selector] = elementRef;
+        return elementRef;
     }
 
     /// <summary>
     /// Sends a mouse click to a html element
+    /// <param name="selector">css selector for element</param>
     /// </summary>
-    /// <param name="element">element reference returned by FindElement</param>
-    public async Task<bool> Click(string element)
+    public async Task<bool> Click(string selector)
     {
         EnsureSession();
-        return await new ElementClickCommand(_settings, _httpClient, SessionId, element)
+        var elementRef = await GetElementReference(selector) ?? string.Empty;
+        return await new ElementClickCommand(_settings, _httpClient, SessionId, elementRef)
             .RunAsync();
     }
 
@@ -116,27 +149,32 @@ public class CommandRunner(Settings settings, HttpClient httpClient)
     /// <summary>
     /// Retrieve the text value of a html element 
     /// </summary>
-    /// <param name="element">element reference returned by FindElements</param>
-    public async Task<string?> GetText(string element)
+    /// <param name="selector">css selector for element</param>
+    public async Task<string?> GetText(string selector)
     {
         EnsureSession();
-        return await new GetElementTextCommand(_settings, _httpClient, SessionId, element)
+        var elementRef = await GetElementReference(selector) ?? string.Empty;
+        return await new GetElementTextCommand(_settings, _httpClient, SessionId, elementRef)
             .RunAsync();
     }
     
     /// <summary>
     /// Retrieve an attribute of a html element
     /// </summary>
-    /// <param name="element">element reference returned by FindElements</param>
+    /// <param name="selector">css selector for element</param>
     /// <param name="attribute">element's attribute name</param>
     /// <returns></returns>
-    public async Task<string?> GetAttribute(string element, string attribute)
+    public async Task<string?> GetAttribute(string selector, string attribute)
     {
         EnsureSession();
-        return await new GetElementAttributeCommand(_settings, _httpClient, SessionId, element, attribute)
+        var elementRef = await GetElementReference(selector) ?? string.Empty;
+        return await new GetElementAttributeCommand(_settings, _httpClient, SessionId, elementRef, attribute)
             .RunAsync();
     }
-    
-    
-    
+
+    public void Dispose()
+    {
+        // ensure we do not keep an open socket
+        _httpClient.Dispose();
+    }
 }
