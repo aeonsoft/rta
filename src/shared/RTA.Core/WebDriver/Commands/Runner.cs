@@ -20,7 +20,6 @@ public class RunnerException(string? message) : Exception(message);
 /// </summary>
 public class Runner(Settings settings) : IDisposable
 {
-    private readonly Settings _settings = settings;
     private readonly HttpClient _httpClient = new HttpClient();
     private string? _sessionId = null;
     private readonly Dictionary<string, string?> _elements = new Dictionary<string, string?>();
@@ -34,7 +33,7 @@ public class Runner(Settings settings) : IDisposable
         if (InSession)
             await CloseSession();
         
-        var session = await new NewSessionCommand(_settings, _httpClient).RunAsync();
+        var session = await new NewSessionCommand(settings, _httpClient).RunAsync();
         _sessionId = session ?.SessionId;
         return _sessionId;
     }
@@ -55,7 +54,7 @@ public class Runner(Settings settings) : IDisposable
         if (!InSession) 
             return true;
         
-        var result = await new DeleteSessionCommand(_settings, _httpClient, SessionId)
+        var result = await new DeleteSessionCommand(settings, _httpClient, SessionId)
             .RunAsync();
         
         if (result)
@@ -66,7 +65,7 @@ public class Runner(Settings settings) : IDisposable
     public async Task<bool> NavigateTo(string where)
     {
         EnsureSession();
-        return await new NavigateToCommand(_settings, _httpClient, SessionId, where)
+        return await new NavigateToCommand(settings, _httpClient, SessionId, where)
             .RunAsync();
     }
 
@@ -82,7 +81,7 @@ public class Runner(Settings settings) : IDisposable
         if (_elements.TryGetValue(selector, out var element))
             return element;
                 
-        element =  await new FindElementCommand(_settings, _httpClient, SessionId, selector)
+        element =  await new FindElementCommand(settings, _httpClient, SessionId, selector)
             .RunAsync();
         if (element is not null)
             _elements[selector] = element;
@@ -99,7 +98,7 @@ public class Runner(Settings settings) : IDisposable
     {
         EnsureSession();        
         var elementRef = await GetElementReference(selector) ?? string.Empty;
-        return await new ElementSendKeysCommand(_settings, _httpClient, SessionId, elementRef, keys)
+        return await new ElementSendKeysCommand(settings, _httpClient, SessionId, elementRef, keys)
             .RunAsync();
 
     }
@@ -132,7 +131,7 @@ public class Runner(Settings settings) : IDisposable
     {
         EnsureSession();
         var elementRef = await GetElementReference(selector) ?? string.Empty;
-        return await new ElementClickCommand(_settings, _httpClient, SessionId, elementRef)
+        return await new ElementClickCommand(settings, _httpClient, SessionId, elementRef)
             .RunAsync();
     }
 
@@ -142,7 +141,7 @@ public class Runner(Settings settings) : IDisposable
     public async Task<string?> GetCurrentUrl()
     {
         EnsureSession();
-        return await new GetCurrentUrlCommand(_settings, _httpClient, SessionId)
+        return await new GetCurrentUrlCommand(settings, _httpClient, SessionId)
             .RunAsync();
     }
 
@@ -154,7 +153,7 @@ public class Runner(Settings settings) : IDisposable
     {
         EnsureSession();
         var elementRef = await GetElementReference(selector) ?? string.Empty;
-        return await new GetElementTextCommand(_settings, _httpClient, SessionId, elementRef)
+        return await new GetElementTextCommand(settings, _httpClient, SessionId, elementRef)
             .RunAsync();
     }
     
@@ -168,7 +167,7 @@ public class Runner(Settings settings) : IDisposable
     {
         EnsureSession();
         var elementRef = await GetElementReference(selector) ?? string.Empty;
-        return await new GetElementAttributeCommand(_settings, _httpClient, SessionId, elementRef, attribute)
+        return await new GetElementAttributeCommand(settings, _httpClient, SessionId, elementRef, attribute)
             .RunAsync();
     }
 
