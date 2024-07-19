@@ -83,11 +83,36 @@ public class Runner(Settings settings) : IDisposable
                 
         element =  await new FindElementCommand(settings, _httpClient, SessionId, selector)
             .RunAsync();
-        if (element is not null)
+        if (!String.IsNullOrEmpty(element))
             _elements[selector] = element;
         
         return element;
     }
+
+
+    public async Task<bool> WaitForElement(string selector, uint timeout = 5000)
+    {        
+        var startTime = DateTime.Now;
+        var endTime = startTime.AddMilliseconds(timeout);
+        while(DateTime.Compare(startTime, endTime) < 0)
+        {
+            try
+            {
+                var elementRef = await FindElement(selector);
+                if (elementRef is not null)
+                {
+                    return true;
+                }
+            }
+            catch (Exception ex) {
+                Thread.Sleep(300);
+            }
+        }
+
+        return false;
+    }
+
+
 
     /// <summary>
     /// Send string as keystrokes to a html element
@@ -112,14 +137,16 @@ public class Runner(Settings settings) : IDisposable
     private async Task<string?> GetElementReference(string selector)
     {
         string? elementRef = null;
-        if (!_elements.TryGetValue(selector, out var element))
+        if (!_elements.TryGetValue(selector, out elementRef))
         {
             elementRef = await FindElement(selector);
             if (elementRef is null)
                 return null;
         }
 
-        _elements[selector] = elementRef;
+        if (elementRef is not null)
+            _elements[selector] = elementRef;
+
         return elementRef;
     }
 
