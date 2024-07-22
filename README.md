@@ -1,14 +1,6 @@
 # RTA (Rainbow's Test Automation)
 Rainbow's Test Automation is a set of tools based on Google WebDriver for defining and automating web ui tests
 
-## Parser
-
-[rtparse](./src/rtparse/)
-
-
-## Runner
-[rtrun](./src/rtrun//)
-
 ## References
 
 - [W3C Web Driver specification](https://www.w3.org/TR/2024/WD-webdriver2-20240618/#dfn-commands)
