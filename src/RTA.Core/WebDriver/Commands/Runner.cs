@@ -206,7 +206,7 @@ public class Runner(Settings settings) : IDisposable
     {
         EnsureSession();
         var image = await new ScreenShotCommand(settings, _httpClient, SessionId).RunAsync();
-        return image?.Value;
+        return image;
     }
     
     /// <summary>
@@ -216,8 +216,9 @@ public class Runner(Settings settings) : IDisposable
     public async Task<string?> ElementScreenShot(string elementId)
     {
         EnsureSession();
-        var image = await new ElementScreenShot(settings, _httpClient, SessionId, elementId).RunAsync();
-        return image?.Value;
+        var elementRef = await FindElement(elementId);
+        var image = await new ElementScreenShot(settings, _httpClient, SessionId, elementRef).RunAsync();
+        return image;
     }
     
 

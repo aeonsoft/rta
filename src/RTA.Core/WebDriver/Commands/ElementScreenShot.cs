@@ -3,13 +3,6 @@ using System.Net.Http.Json;
 
 namespace RTA.Core.WebDriver.Commands;
 
-public class ElementScreenShotResponseCommand
-{
-    /// <summary>
-    /// Base64-encoded PNG image data comprising the screenshot of the initial viewport
-    /// </summary>
-    public string? Value { get; set; }
-}
 
 /// <summary>
 /// Takes a screenshot of the visible region encompassed by the bounding rectangle of an element.
@@ -20,11 +13,11 @@ public class ElementScreenShotResponseCommand
 /// <param name="sessionId"></param>
 /// <param name="elementId"></param>
 public class ElementScreenShot(Settings settings, HttpClient client, string sessionId, string elementId) 
-    : ICommand<ElementScreenShotResponseCommand>
+    : ICommand<string?>
 {
-    public async Task<ElementScreenShotResponseCommand?> RunAsync()
+    public async Task<string?> RunAsync()
     {
-        var url = $"http://localhost:{settings.Port}/session/{sessionId}/element/{elementId}screenshot";
+        var url = $"http://localhost:{settings.Port}/session/{sessionId}/element/{elementId}/screenshot";
         var response = await client.GetAsync(url);
         switch (response.StatusCode)
         {
@@ -32,7 +25,7 @@ public class ElementScreenShot(Settings settings, HttpClient client, string sess
             case HttpStatusCode.NotFound: throw new NoSuchElementException();
         }
         
-        var result = await response.Content.ReadFromJsonAsync<Response<ElementScreenShotResponseCommand>>();
+        var result = await response.Content.ReadFromJsonAsync<Response<string>>();
         if (result is null)
             throw new HttpRequestException("Invalid response received from web driver");
 

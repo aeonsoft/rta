@@ -1,4 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Net.Mime;
+using System.Reflection;
 using Moq;
 using RTA.Core.WebDriver;
 using RTA.Core.WebDriver.Commands;
@@ -58,6 +60,54 @@ public class RunnerTests
         //assert
         Assert.Equal(expectedUrl, currentUtl);
     }
+
+    [Fact]
+    public async Task TakeScreenshot_OnValidPage_ReturnsPageImage()
+    {
+        string? image;
+        var imagePath = Path.Combine(Directory.GetCurrentDirectory(),
+            "TakeScreenshot_OnValidPage_ReturnsPageImage.png");
+            
+        using (var runner = new Runner(_settings))
+        {
+            await runner.StartSession();
+            await runner.NavigateTo(SauceDemoUrl);
+            image = await runner.ScreenShot();
+            await runner.CloseSession();
+        }
+
+        Assert.NotNull(image);
+        Assert.True(image.Length > 100);
+        
+        await File.WriteAllBytesAsync(imagePath, Convert.FromBase64String(image));
+        Assert.True(File.Exists(imagePath));
+        
+        File.Delete(imagePath);
+    }
+    
+    [Fact]
+    public async Task TakeElementScreenshot_OnValidElement_ReturnsPageImage()
+    {
+        string? image;
+        var imagePath = Path.Combine(Directory.GetCurrentDirectory(),
+            "TakeElementScreenshot_OnValidElement_ReturnsPageImage.png");
+            
+        using (var runner = new Runner(_settings))
+        {
+            await runner.StartSession();
+            await runner.NavigateTo(SauceDemoUrl);
+            image = await runner.ElementScreenShot("#login_button_container");
+            await runner.CloseSession();
+        }
+
+        Assert.NotNull(image);
+        Assert.True(image.Length > 100);
+        await File.WriteAllBytesAsync(imagePath, Convert.FromBase64String(image));
+        Assert.True(File.Exists(imagePath));
+        
+        File.Delete(imagePath);
+    }
+    
 
     [Fact]
     public async Task ClickOnLogin_WithInvalidUserName_ShouldDisplayError()
