@@ -1,8 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Net.Mime;
-using System.Reflection;
-using Moq;
-using RTA.Core.WebDriver;
+﻿using RTA.Core.WebDriver;
 using RTA.Core.WebDriver.Commands;
 
 namespace RTA.Core.Tests;
@@ -10,8 +6,7 @@ namespace RTA.Core.Tests;
 public class RunnerTests
 {
     const string SauceDemoUrl = "https://www.saucedemo.com/";
-    private readonly Settings _settings = new Settings { Port = 9515 };
-    private readonly HttpClient _httpClient = new HttpClient();
+    private readonly Settings _settings = new Settings { Port = 9515 };    
 
     [Fact]
     public async Task StartSession_WithInValidPort_ThrowsHttpRequestException()
