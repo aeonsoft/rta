@@ -3,15 +3,6 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using RTA.Core.WebDriver;
 using RTA.Core.WebDriver.Commands;
-using RTA.Core.WebDriver.Commands.DeleteSession;
-using RTA.Core.WebDriver.Commands.ElementClick;
-using RTA.Core.WebDriver.Commands.ElementSendKeys;
-using RTA.Core.WebDriver.Commands.FindElement;
-using RTA.Core.WebDriver.Commands.GetCurrentUrl;
-using RTA.Core.WebDriver.Commands.GetElementAttribute;
-using RTA.Core.WebDriver.Commands.GetElementText;
-using RTA.Core.WebDriver.Commands.NavigateTo;
-using RTA.Core.WebDriver.Commands.NewSession;
 
 namespace RTA.Core.Tests;
 
