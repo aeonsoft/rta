@@ -1,5 +1,6 @@
 ﻿using System.Net.Http.Json;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Windows.Input;
 
 namespace RTA.Core.WebDriver.Commands;
@@ -26,15 +27,11 @@ public class FindElementCommand(Settings settings, HttpClient client, string ses
         if (!response.IsSuccessStatusCode)
             return null;
         
-        var text = await response.Content.ReadAsStringAsync();
-        var json = JsonDocument.Parse(text);
-        var value = json.RootElement.GetProperty("value");
-        var result = value.ToString();
-        if (!result.Contains(':'))
+        var result = await response.Content.ReadFromJsonAsync<Response<JsonNode>>();
+        var json = result?.Value?.AsObject();
+        if (json is null || json.Count == 0)
             return null;
-
-        result = result.Split(':')[1];
-        result = result.Substring(result.IndexOf('"')+1, result.LastIndexOf('"')-1);
-        return result;
+        
+        return json.First().Value?.ToString();
     }
 }

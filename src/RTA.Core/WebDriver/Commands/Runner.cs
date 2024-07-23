@@ -73,9 +73,10 @@ public class Runner(Settings settings) : IDisposable
         if (_elements.TryGetValue(selector, out var element))
             return element;
                 
-        element =  await new FindElementCommand(settings, _httpClient, SessionId, selector)
+        element = await new FindElementCommand(settings, _httpClient, SessionId, selector)
             .RunAsync();
-        if (!String.IsNullOrEmpty(element))
+        
+        if (element is not null)
             _elements[selector] = element;
         
         return element;
