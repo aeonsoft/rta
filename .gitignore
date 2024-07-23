@@ -5,6 +5,7 @@
 **/obj/
 **/packages/
 **/.idea/
+**/.vs/
 
 src/shared/RTA.Core/obj/
 src/shared/RTA.Core/bin/
