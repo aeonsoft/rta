@@ -24,7 +24,3 @@ jobs:
       run: dotnet restore
     - name: Build
       run: dotnet build --no-restore
-    - name: Upload Dll
-      uses: actions/upload-artifact@v3
-        name: RTA.Core.dll
-        path: .\bin\
