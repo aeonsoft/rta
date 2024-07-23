@@ -1,4 +1,5 @@
-﻿using RTA.Core.WebDriver;
+﻿using System.Reflection;
+using RTA.Core.WebDriver;
 using RTA.Core.WebDriver.Commands;
 
 namespace RTA.Core.Tests;
@@ -40,7 +41,7 @@ public class RunnerTests
     }
 
     [Fact]
-    public async Task NavigateTo_RealWebSite_OpensRightPage()
+    public async Task NavigateTo_RealWebSite_OpensCorrectPage()
     {
         //arrange
         var runner = new Runner(_settings);
@@ -48,12 +49,32 @@ public class RunnerTests
         
         //act
         await runner.StartSession();
-        await runner.NavigateTo(expectedUrl);
+        await runner.NavigateTo(SauceDemoUrl);
         var currentUtl = await runner.GetCurrentUrl();
         await runner.CloseSession();
         
         //assert
         Assert.Equal(expectedUrl, currentUtl);
+    }
+
+    [Fact]
+    public async Task GetPageSource_OnValidPage_ReturnsPageSource()
+    {
+        //arrange
+        string? pageSource;
+        var expectedUrl = SauceDemoUrl;
+        
+        //act
+        using (var runner = new Runner(_settings))
+        {
+            await runner.StartSession();
+            await runner.NavigateTo(expectedUrl);
+            pageSource = await runner.PageSource();
+            await runner.CloseSession();
+        }
+
+        //assert
+        Assert.Contains("<title>Swag Labs</title>", pageSource);
     }
 
     [Fact]
@@ -101,6 +122,45 @@ public class RunnerTests
         Assert.True(File.Exists(imagePath));
         
         File.Delete(imagePath);
+    }
+
+    [Fact]
+    public async Task GetActiveElement_WhenActiveElementHasNoId_ReturnsNull()
+    {
+        //arrange
+        string? activeElement;
+        
+        //act
+        using (var runner = new Runner(_settings))
+        {
+            await runner.StartSession();
+            await runner.NavigateTo(SauceDemoUrl);
+            activeElement = await runner.ActiveElementId();
+            await runner.CloseSession();
+        }
+
+        //assert
+        Assert.Null(activeElement);
+    }
+    
+    [Fact]
+    public async Task GetActiveElementTag_WhenThereAreAnActiveElement_ReturnsTagName()
+    {
+        //arrange
+        const string expectedActiveTagName = "body"; 
+        string? activeTagName;
+        
+        //act
+        using (var runner = new Runner(_settings))
+        {
+            await runner.StartSession();
+            await runner.NavigateTo(SauceDemoUrl);
+            activeTagName = await runner.ActiveElementTagName();
+            await runner.CloseSession();
+        }
+
+        //assert
+        Assert.Equal(expectedActiveTagName, activeTagName);
     }
     
 

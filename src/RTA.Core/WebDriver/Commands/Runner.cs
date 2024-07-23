@@ -63,11 +63,11 @@ public class Runner(Settings settings) : IDisposable
 
     /// <summary>
     /// Finds one element using a css selector.
-    /// This method uses no caching strategy.
+    /// This method uses no caching strategy
     /// </summary>
     /// <param name="selector"></param>
     /// <returns>Internal element's Id</returns>
-    public async Task<string?> FindElement(string selector)
+    private async Task<string?> FindElement(string selector)
     {
         EnsureSession();
         if (_elements.TryGetValue(selector, out var element))
@@ -136,8 +136,7 @@ public class Runner(Settings settings) : IDisposable
     /// <returns></returns>
     private async Task<string?> GetElementReference(string selector)
     {
-        string? elementRef = null;
-        if (!_elements.TryGetValue(selector, out elementRef))
+        if (!_elements.TryGetValue(selector, out var elementRef))
         {
             elementRef = await FindElement(selector);
             if (elementRef is null)
@@ -219,6 +218,53 @@ public class Runner(Settings settings) : IDisposable
         var elementRef = await FindElement(elementId);
         var image = await new ElementScreenShot(settings, _httpClient, SessionId, elementRef).RunAsync();
         return image;
+    }
+
+    /// <summary>
+    /// Retrieves the id of the active element on the page.
+    /// If there is no active element return null.
+    /// If the element has an id, return it, otherwise return null
+    /// </summary>
+    /// <returns></returns>
+    public async Task<string?> ActiveElementId()
+    {
+        EnsureSession();
+        var elementRef = await new GetActiveElementCommand(settings, _httpClient, SessionId).RunAsync();
+        if (elementRef is null) 
+            return null;
+
+        var elementId = await new GetElementAttributeCommand(settings, _httpClient, SessionId, elementRef, "id")
+            .RunAsync();
+
+        return elementId;
+    }
+    
+    /// <summary>
+    /// Retrieves the tag name of the active element on the page.
+    /// If there is no active element return null.
+    /// </summary>
+    /// <returns></returns>
+    public async Task<string?> ActiveElementTagName()
+    {
+        EnsureSession();
+        var elementRef = await new GetActiveElementCommand(settings, _httpClient, SessionId).RunAsync();
+        if (elementRef is null) 
+            return null;
+
+        var tagName = await new GetElementTagNameCommand(settings, _httpClient, SessionId, elementRef)
+            .RunAsync();
+
+        return tagName;
+    }
+
+    /// <summary>
+    /// Retrieves the html source for current opened page
+    /// </summary>
+    /// <returns></returns>
+    public async Task<string?> PageSource()
+    {
+        EnsureSession();
+        return await new GetPageSourceCommand(settings, _httpClient, SessionId).RunAsync();
     }
     
 
